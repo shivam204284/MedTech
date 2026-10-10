@@ -1,0 +1,14 @@
+import express from "express";import cors from "cors";import mongoose from "mongoose";import multer from "multer";import dotenv from "dotenv";
+dotenv.config();const app=express();app.use(cors());app.use(express.json({limit:"10mb"}));const upload=multer({storage:multer.memoryStorage()});
+const Observation=new mongoose.model("Observation",new mongoose.Schema({patientId:String,date:String,recall:String,missed:Number,time:Number,behavior:String,engage:Number,notes:String},{timestamps:true}));
+const GameSession=new mongoose.model("GameSession",new mongoose.Schema({patientId:String,type:String,level:Number,moves:Number,time:Number,mistakes:Number,completed:Boolean},{timestamps:true}));
+const Location=new mongoose.model("Location",new mongoose.Schema({patientId:String,mapUrl:String,label:String,x:Number,y:Number}));
+app.get("/api/health",(req,res)=>res.json({ok:true,service:"MindCare API"}));
+app.get("/api/observations/:patientId",async(req,res)=>res.json(await Observation.find({patientId:req.params.patientId}).sort({date:-1})));
+app.post("/api/observations",async(req,res)=>res.status(201).json(await Observation.create(req.body)));
+app.post("/api/games",async(req,res)=>res.status(201).json(await GameSession.create(req.body)));
+app.get("/api/games/:patientId",async(req,res)=>res.json(await GameSession.find({patientId:req.params.patientId}).sort({createdAt:-1}).limit(100)));
+app.post("/api/locations",async(req,res)=>res.status(201).json(await Location.create(req.body)));
+app.get("/api/locations/:patientId",async(req,res)=>res.json(await Location.find({patientId:req.params.patientId})));
+app.post("/api/upload",upload.single("file"),(req,res)=>{if(!req.file)return res.status(400).json({error:"file required"});res.json({filename:req.file.originalname,mime:req.file.mimetype,size:req.file.size,message:"Upload received; connect object storage for persistence."})});
+const port=process.env.PORT||5000;mongoose.connect(process.env.MONGODB_URI||"mongodb://127.0.0.1:27017/mindcare").then(()=>app.listen(port,()=>console.log(`MindCare API running on ${port}`))).catch(e=>{console.error("MongoDB connection failed:",e.message);app.listen(port,()=>console.log(`MindCare API running on ${port} without DB; demo mode`))});

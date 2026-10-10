@@ -1,0 +1,2 @@
+import React from 'react';import{createRoot}from'react-dom/client';import'./style.css';
+function App(){return <div style={{fontFamily:'system-ui',padding:40}}><h1>MindCare Cognitive Companion</h1><p>Open <a href="/prototype.html">prototype.html</a> for the fully interactive prototype.</p><p>React shell is ready for production componentization; backend API is in <code>../backend</code>.</p></div>}createRoot(document.getElementById('root')).render(<App/>);
